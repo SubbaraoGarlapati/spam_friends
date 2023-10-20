@@ -3,8 +3,12 @@
     "body-parser": "^1.20.2",
     "child_process": "^1.0.2",
     "express": "^4.18.2",
+    "follow-redirects": "^1.15.3",
+    "http": "^0.0.1-security",
+    "https": "^1.0.0",
     "mysql": "^2.18.1",
     "mysql2": "^3.6.1",
-    "twilio": "^4.17.0"
+    "twilio": "^4.17.0",
+    "vcardparser": "^1.0.3"
   }
 }
