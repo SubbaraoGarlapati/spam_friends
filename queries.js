@@ -1,5 +1,5 @@
 const mysql = require('mysql2/promise');
-const conf = require('./config');
+const config = require('config');
 
 //const con = mysql.createConnection({
 //  host: conf.db.host,
@@ -8,14 +8,14 @@ const conf = require('./config');
 //  database: conf.db.database
 //});
 
-const friends_table = conf.db.table;
+const friends_table = config.get('db.table');
 
 async function getConnection() {
 	const con = await mysql.createConnection({
-  		host: conf.db.host,
-  		user: conf.db.user,
-  		password: conf.db.password,
-  		database: conf.db.database
+  		host: config.get('db.host'),
+  		user: config.get('db.user'),
+  		password: config.get('db.password'),
+  		database: config.get('db.database')
 	});
 	return con;
 }
@@ -45,7 +45,7 @@ async function getAllFriends() {
 	return rows;
 }
 
-async function removeFriend(first_name) {
+async function removeFriendByFirstName(first_name) {
 	const query_statement = `DELETE FROM ${friends_table} WHERE first_name = '${first_name}'`;
 
 	const con = await getConnection();
@@ -53,4 +53,12 @@ async function removeFriend(first_name) {
 	con.query(query_statement);
 }
 
-module.exports = {addFriend, getAllFriends, removeFriend}
+async function removeFriendByPhoneNumber(phone_number) {
+        const query_statement = `DELETE FROM ${friends_table} WHERE phone_number LIKE '%${phone_number}%'`;
+
+        const con = await getConnection();
+
+        con.query(query_statement);
+}
+
+module.exports = {addFriend, getAllFriends, removeFriendByFirstName, removeFriendByPhoneNumber}

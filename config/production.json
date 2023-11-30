@@ -1,0 +1,20 @@
+{
+	"app": {
+		"port": 3000
+	},
+	"numbers": {
+		"twilio": "+16516154507",
+		"me": "+16516002589"
+	},
+	"twilio": {
+		"TWILIO_ACCOUNT_SID": "ACf29be482d385763581e4768f8a8518ae",
+		"TWILIO_AUTH_TOKEN": "d0363dd6daaebfe8f3f4491437fb5290"
+	},
+	"db": {
+		"host": "localhost",
+  		"user": "root",
+  		"password": "rootpw",
+  		"database": "spam_friends_db",
+		"table": "friends"
+	}
+}

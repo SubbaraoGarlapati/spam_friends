@@ -2,26 +2,27 @@ const http = require('http');
 const express = require('express');
 const { urlencoded } = require('body-parser');
 //const MessagingResponse = require('twilio').twiml.MessagingResponse;
-const config = require('./config'); 
+const config = require('config'); 
 
 const app = express();
 app.use(urlencoded({ extended: false }));
-const port = config.app.port;
+
+const port = config.get("app.port");
 
 const {addFriendFromVCFLink, listFriendsToMe, forwardToMe, sendMessageToAllFriends} = require('./helpers');
-const {addFriend, removeFriend} = require('./queries');
+const {addFriend, removeFriendByFirstName, removeFriendByPhoneNumber} = require('./queries');
 
 app.post('/sms', (req, res) => {
   //const twiml = new MessagingResponse();
 
   // Access the message body and the number it was sent from.
-  console.log(`Incoming message from ${req.body.From}: ${req.body.Body}`);
+  console.log(`\n\nIncoming message from ${req.body.From}: ${req.body.Body}`);
 
  // twiml.message('The Robots are coming! Head for the hills!');
 
  // res.writeHead(200, {'Content-Type': 'text/xml'});
   //res.end(twiml.toString());
-  console.log(req.body);
+//  console.log(req.body);
   if (req.body.From == "+16516002589") {
 	if (req.body.NumMedia == 1) {
 		console.log('VCF');
@@ -43,7 +44,7 @@ app.post('/sms', (req, res) => {
 		console.log('REMOVE');
 		let secondWord = splitBody[1];
 		console.log(`Friend to remove: ${secondWord}`);
-		removeFriend(secondWord);
+		removeFriendByFirstName(secondWord);
 	} else if (firstWord == 'SEND') {
 		console.log('SEND');
 		let message = req.body.Body.substr(req.body.Body.indexOf(" ")+1);
@@ -54,9 +55,16 @@ app.post('/sms', (req, res) => {
 		listFriendsToMe();
 	}
   } else {
-	forwardToMe(req.body.Body); 
+	 let splitBody = req.body.Body.split(' ');
+         let firstWord = splitBody[0];
+	 if (firstWord == 'TERMINATE') {
+		//ignore beginning +1 if it exists 
+		phoneNumber = req.body.From.slice(-10);
+	 	removeFriendByPhoneNumber(phoneNumber);
+	 }	 
+	 forwardToMe(req.body.Body); 
   }
-
+  res.status(200).send();
 });
 
 http.createServer(app).listen(port, () => {

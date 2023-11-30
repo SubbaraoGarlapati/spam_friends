@@ -1,10 +1,9 @@
 const fs = require('fs')
-const config = require('./config')
+const config = require('config')
 const { exec }  = require('child_process');
 const twilio = require('twilio');
-const accountSid = config.twilio.TWILIO_ACCOUNT_SID;
-const authToken = config.twilio.TWILIO_AUTH_TOKEN;
-const recipientsFile = config.numbers.recipientsFile;
+const accountSid = config.get('twilio.TWILIO_ACCOUNT_SID');
+const authToken = config.get('twilio.TWILIO_AUTH_TOKEN');
 const vcardparser = require('vcardparser');
 var https = require('https');
 var https = require('follow-redirects').https;
@@ -48,11 +47,12 @@ async function sendMessageToAllFriends(message) {
 			unsuccessful_recipients.push(friend.first_name + " " + friend.last_name);
 		}
 	});
-	sendMessageToRecipient('Successfully sent to ' + successful_recipients.join(', '),'+16516002589');
-	sendMessageToRecipient('Unsuccessfully sent to ' + unsuccessful_recipients.join(', '),'+16516002589');
+	sendMessageToRecipient('Successful recipients: ' + successful_recipients.join(', '),'+16516002589');
+	sendMessageToRecipient('Unsuccessful recipients: ' + unsuccessful_recipients.join(', '),'+16516002589');
 }
 
 function sendMessageToRecipient(message, recipient) {
+	console.log("sendMessageToRecipient");
 	try {
 		console.log(`recipient: ${recipient}`);
 		client.messages.create({
@@ -69,15 +69,16 @@ function sendMessageToRecipient(message, recipient) {
 
 async function listFriendsToMe() {
 	let message = '';
-	console.log('test');
 	const [friends, fields] = await getAllFriends();
-	console.log('typeof' + typeof friends);
-	console.log(friends);
 	friends.forEach((friend) => {
 		message += friend.first_name == 'NULL' ? '': friend.first_name + ' ';
 		message += friend.last_name == 'NULL' ?  '' : friend.last_name;
 		message += ' (' + friend.phone_number + ')\n';
 	});
+	console.log('message: ' + message);
+	if (!message) {
+		message = 'Get some damn friends boy!';
+	}
 	sendMessageToRecipient(message, '+16516002589');
 }
 
