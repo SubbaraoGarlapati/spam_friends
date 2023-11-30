@@ -45,4 +45,12 @@ async function getAllFriends() {
 	return rows;
 }
 
-module.exports = {addFriend, getAllFriends}
+async function removeFriend(first_name) {
+	const query_statement = `DELETE FROM ${friends_table} WHERE first_name = '${first_name}'`;
+
+	const con = await getConnection();
+
+	con.query(query_statement);
+}
+
+module.exports = {addFriend, getAllFriends, removeFriend}

@@ -8,8 +8,8 @@ const app = express();
 app.use(urlencoded({ extended: false }));
 const port = config.app.port;
 
-const {addFriendFromVCFLink, listFriendsToMe, forwardToMe, removeNumber, sendMessageToAllFriends} = require('./helpers');
-const {addFriend} = require('./queries');
+const {addFriendFromVCFLink, listFriendsToMe, forwardToMe, sendMessageToAllFriends} = require('./helpers');
+const {addFriend, removeFriend} = require('./queries');
 
 app.post('/sms', (req, res) => {
   //const twiml = new MessagingResponse();
@@ -42,7 +42,7 @@ app.post('/sms', (req, res) => {
 	} else if (firstWord == 'REMOVE') {
 		console.log('REMOVE');
 		let secondWord = splitBody[1];
-		console.log(`Number to remove: ${secondWord}`);
+		console.log(`Friend to remove: ${secondWord}`);
 		removeFriend(secondWord);
 	} else if (firstWord == 'SEND') {
 		console.log('SEND');
@@ -53,7 +53,6 @@ app.post('/sms', (req, res) => {
 		console.log('LIST');
 		listFriendsToMe();
 	}
-
   } else {
 	forwardToMe(req.body.Body); 
   }

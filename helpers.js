@@ -9,7 +9,7 @@ const vcardparser = require('vcardparser');
 var https = require('https');
 var https = require('follow-redirects').https;
 
-const {addFriend, getAllFriends} = require('./queries');
+const {addFriend, getAllFriends, removeFriend} = require('./queries');
 
 const client = new twilio(accountSid, authToken);
 function addFriendFromVCFLink(url) {
@@ -35,29 +35,35 @@ function addFriendFromVCFLink(url) {
 	});
 }
 
-function sendMessageToAllFriends(message) {
+async function sendMessageToAllFriends(message) {
 	console.log(`sendMessage with message ${message}`);
-	let recipientArr = fs.readFileSync('/home/ubuntu/recipients.txt').toString().split("\n");
-	var failed = ''
-	recipientArr.forEach((recipient) => {
-		var result = sendMessageToRecipient(message, recipient);
-		if (!result) {
-			failed = failed + recipient + ' ';
+	const [friends, fields] = await getAllFriends();
+        successful_recipients = [];
+	unsuccessful_recipients = [];
+	friends.forEach((friend) => {
+		result = sendMessageToRecipient(message, friend.phone_number);
+        	if (result) {
+			successful_recipients.push(friend.first_name + " " + friend.last_name);
+		} else {
+			unsuccessful_recipients.push(friend.first_name + " " + friend.last_name);
 		}
 	});
-	if (failed != '') {
-		console.log('Following recipients failed: ' + failed);
-	}
+	sendMessageToRecipient('Successfully sent to ' + successful_recipients.join(', '),'+16516002589');
+	sendMessageToRecipient('Unsuccessfully sent to ' + unsuccessful_recipients.join(', '),'+16516002589');
 }
 
 function sendMessageToRecipient(message, recipient) {
-	if (!isValidNumber(recipient)) { return false; }
-	console.log(`recipient: ${recipient}`);
-	client.messages.create({
-		body: message,
-		to: recipient,
-		from: config.numbers.twilio
-	});
+	try {
+		console.log(`recipient: ${recipient}`);
+		client.messages.create({
+			body: message,
+			to: recipient,
+			from: config.numbers.twilio
+		});
+	} catch (error) {
+		console.log(error);
+		return false;
+	}
 	return true;
 }
 
@@ -73,12 +79,6 @@ async function listFriendsToMe() {
 		message += ' (' + friend.phone_number + ')\n';
 	});
 	sendMessageToRecipient(message, '+16516002589');
-}
-
-function isValidNumber(number) {
-	test =  /^\+[0-9]{11}$/.test(number);
-	console.log(test);
-	return test;
 }
 
 module.exports = {addFriendFromVCFLink, listFriendsToMe, sendMessageToAllFriends}
